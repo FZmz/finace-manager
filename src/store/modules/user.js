@@ -1,3 +1,5 @@
+import { logout } from "../../apis/user";
+import { Message } from "element-ui";
 export default {
   state: {
     isLogin: false,
@@ -27,4 +29,15 @@ export default {
     },
   },
   // 异步行为放在
+  actions: {
+    async doLogout({ commit }, payload) {
+      let [res, err] = await logout();
+      if (err) {
+        return Message.error("退出失败！");
+      }
+      commit("changeIsLogin", false);
+      commit("changeUserInfo", null);
+      commit("changeUserMenus", null);
+    },
+  },
 };

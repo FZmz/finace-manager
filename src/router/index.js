@@ -8,12 +8,33 @@ import axios from "axios"; // 需要直接访问public下的menus
 import { pretty } from "@/utils/request";
 import Layout from "../layouts/Layouts.vue";
 Vue.use(VueRouter);
+// 处理路由跳转的异常提示：功能上没有问题的，要么换3.0版本，要么catch一下不处理不报错
 
 const constansRoutes = [
   {
     path: "/",
-    name: "home",
-    component: Home,
+    name: "Home",
+    redirect: "/home",
+    meta: {
+      title: "首页",
+    },
+    component: Layout,
+    children: [
+      {
+        path: "/home",
+        component: Home,
+      },
+    ],
+  },
+  {
+    path: "/404",
+    name: "NotFound",
+    component: () => import("../views/404.vue"),
+  },
+  {
+    path: "/401",
+    name: "Refused",
+    component: () => import("../views/401.vue"),
   },
   {
     path: "/about",
@@ -29,6 +50,12 @@ const constansRoutes = [
     name: "Login",
     component: () => import("../views/Login.vue"),
   },
+  // 常规操作时这里加入，处理404
+  /*  {
+    path: "*",
+    redirect: { name: "NotFound" },
+  }, */
+  // 异步路由 会被前面的* 有限匹配 所以无法匹配到后边的异步路由
 ];
 const router = new VueRouter({
   routes: constansRoutes,
@@ -56,8 +83,13 @@ async function loadMenus(next, to) {
   }
   let asyncRoutes = asyncRoutesHandler(res.data); // 不需要存储组件函数，使用基本的一些描述字符串即可
   next({ ...to, replace: true }); // 替换当前访问的路径，不会有多余上一页的箭头
+  // 最后一个是404的重定向
   asyncRoutes.forEach((r) => {
     router.addRoute(r);
+  });
+  router.addRoute({
+    path: "*",
+    redirect: { name: "NotFound" },
   });
   // 保存用户菜单 => 申城左侧动态菜单栏
   store.commit("user/changeUserMenus", asyncRoutes);

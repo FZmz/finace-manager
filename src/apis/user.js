@@ -5,3 +5,8 @@ export const doLogin = (user) =>{
     password: user.password
   }))
 }
+
+export const logout = ()=>{
+  return pretty(request.post('/user/logout'));
+  
+}
